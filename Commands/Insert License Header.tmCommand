@@ -1,20 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>beforeRunningCommand</key>
 	<string>nop</string>
 	<key>command</key>
-	<string>insert_header.rb</string>
+	<string>#!/usr/bin/env ruby
+
+require ENV['TM_SUPPORT_PATH'] + '/lib/ui'
+require ENV['TM_SUPPORT_PATH'] + '/lib/exit_codes'
+
+support = ENV['TM_BUNDLE_SUPPORT']
+header_dir = "#{support}/headers"
+project_license = ENV['TM_PROJECT_LICENSE']
+
+unless project_license.nil?
+  header_file_path = "#{header_dir}/#{project_license}"
+  TextMate.exit_show_tool_tip("No license header exists for project license '#{project_license}'") unless File.exist? header_file_path
+  header_file = File.new(header_file_path)
+  puts header_file.read
+else
+  entries = nil
+
+  Dir.chdir(header_dir) do
+    entries = Dir.glob("*")
+  end
+
+  license = TextMate::UI.request_item(
+    :items =&gt; entries
+  )
+
+  header = *open("#{header_dir}/#{license}")
+  puts header.join("")
+end
+</string>
 	<key>input</key>
 	<string>none</string>
+	<key>inputFormat</key>
+	<string>text</string>
 	<key>name</key>
 	<string>Insert License Header</string>
-	<key>output</key>
-	<string>insertAsSnippet</string>
+	<key>outputCaret</key>
+	<string>afterOutput</string>
+	<key>outputFormat</key>
+	<string>snippet</string>
+	<key>outputLocation</key>
+	<string>replaceSelection</string>
 	<key>tabTrigger</key>
 	<string>license</string>
 	<key>uuid</key>
 	<string>1A7C4C42-62E3-4C02-8AFA-AB478D7FEC1F</string>
+	<key>version</key>
+	<integer>2</integer>
 </dict>
 </plist>
